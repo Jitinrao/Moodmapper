@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Google Maps API Test</title>
+</head>
+<body>
+    <h1>Google Maps API Test</h1>
+    <div id="status">Testing API...</div>
+    
+    <script>
+        const apiKey = "AIzaSyDyT79prG3kJw-VjczBngi6QvO4_EMZJ_k";
+        
+        // Test Google Maps API
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initMap`;
+        script.async = true;
+        script.defer = true;
+        
+        window.initMap = function() {
+            document.getElementById('status').innerHTML = 
+                '<span style="color: green;">✅ Google Maps API loaded successfully!</span>';
+            
+            // Test autocomplete service
+            const autocompleteService = new google.maps.places.AutocompleteService();
+            autocompleteService.getPlacePredictions(
+                { input: 'delhi', types: ['establishment'] },
+                (predictions, status) => {
+                    if (status === google.maps.places.PlacesServiceStatus.OK) {
+                        document.getElementById('status').innerHTML += 
+                            '<br><span style="color: green;">✅ Autocomplete service working!</span>' +
+                            '<br>Found ' + predictions.length + ' predictions';
+                    } else {
+                        document.getElementById('status').innerHTML += 
+                            '<br><span style="color: red;">❌ Autocomplete failed: ' + status + '</span>';
+                    }
+                }
+            );
+        };
+        
+        script.onerror = function() {
+            document.getElementById('status').innerHTML = 
+                '<span style="color: red;">❌ Failed to load Google Maps API</span>';
+        };
+        
+        document.head.appendChild(script);
+    </script>
+</body>
+</html>

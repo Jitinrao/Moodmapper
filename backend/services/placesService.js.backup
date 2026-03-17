@@ -1,0 +1,463 @@
+const axios = require('axios');
+
+// Mood to Google Places API type mapping
+const moodToPlacesTypes = {
+  work: ['coworking_space', 'office', 'business_center', 'library'],
+  relax: ['spa', 'park', 'beauty_salon', 'wellness_center'],
+  food: ['restaurant', 'cafe', 'bakery', 'bar', 'food', 'meal_delivery'],
+  social: ['bar', 'nightclub', 'casino', 'bowling_alley', 'movie_theater'],
+  nature: ['park', 'tourist_attraction', 'campground', 'hiking_area', 'zoo'],
+  fitness: ['gym', 'fitness_center', 'yoga_studio', 'swimming_pool', 'sports_complex'],
+  culture: ['museum', 'art_gallery', 'theater', 'concert_hall', 'cultural_center'],
+  entertainment: ['movie_theater', 'amusement_park', 'bowling_alley', 'casino', 'arcade'],
+  learning: ['library', 'bookstore', 'school', 'university', 'course'],
+  shopping: ['shopping_mall', 'clothing_store', 'supermarket', 'electronics_store', 'department_store'],
+  clinic: ['hospital', 'clinic', 'doctor', 'pharmacy', 'dentist', 'veterinary_care']
+};
+
+const calculateDistance = (point1, point2) => {
+  if (!point1 || !point2 || !point1.lat || !point1.lng || !point2.lat || !point2.lng) {
+    return 0;
+  }
+
+  const R = 6371; // Earth's radius in kilometers
+  const dLat = (point2.lat - point1.lat) * Math.PI / 180;
+  const dLon = (point2.lng - point1.lng) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(point1.lat * Math.PI / 180) * Math.cos(point2.lat * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const distance = R * c; // Distance in kilometers
+
+  return Math.round(distance * 100) / 100; // Round to 2 decimal places
+};
+
+const getNearbyPlaces = async (location, mood, radius = 2000) => {
+  try {
+    console.log('🔍 Fetching REAL places for location:', location);
+    console.log(`📍 Radius: ${radius} meters (${radius/1000} km), Mood: ${mood}`);
+    console.log('🎯 Radius parameter received:', radius);
+    console.log('🆔 Request ID:', Date.now());
+    
+    // Check if radius is actually changing
+    if (radius <= 2000) {
+      console.log('⚠️ Small radius detected:', radius, 'meters');
+    } else if (radius > 10000) {
+      console.log('🌍 Large radius detected:', radius, 'meters');
+    }
+    
+    // Check if API key exists
+    if (!process.env.GOOGLE_MAPS_API_KEY) {
+      console.error('❌ Google Maps API key not configured');
+      return generateMockPlaces(location, mood, radius);
+    }
+
+    // Try to fetch real places from Google Places API
+    console.log('🌐 Attempting to fetch real places from Google API...');
+    const types = moodToPlacesTypes[mood] || ['restaurant'];
+    const allPlaces = [];
+    
+    // Strategy 1: Search by specific types
+    for (const type of types) {
+      try {
+        const apiUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json`;
+        const searchRadius = Math.min(radius, 50000);
+        
+        const params = new URLSearchParams({
+          location: `${location.lat},${location.lng}`,
+          radius: searchRadius.toString(),
+          type: type,
+          key: process.env.GOOGLE_MAPS_API_KEY
+        });
+
+        console.log(`🌐 Calling Google API for type: ${type} with radius: ${searchRadius}m`);
+        
+        let response;
+        try {
+          response = await axios.get(`${apiUrl}?${params}`, { 
+            timeout: 5000,
+            retry: 1,
+            retryDelay: 1000
+          });
+        } catch (apiError) {
+          console.error(`❌ Google API failed for type: ${type}`, apiError.message);
+          continue; // Skip to next type
+        }
+        
+        if (response.data && response.data.results && response.data.results.length > 0) {
+          console.log(`✅ Found ${response.data.results.length} places for type: ${type}`);
+          
+          // Process and add places
+          const processedPlaces = response.data.results.map(place => ({
+            place_id: place.place_id,
+            name: place.name,
+            vicinity: place.vicinity || 'No address',
+            rating: place.rating || 0,
+            user_ratings_total: place.user_ratings_total || 0,
+            price_level: place.price_level || 1,
+            types: place.types || [type],
+            geometry: {
+              location: {
+                lat: place.geometry.location.lat,
+                lng: place.geometry.location.lng
+              }
+            },
+            photos: place.photos || [],
+            distance: calculateDistance(location, {
+              lat: place.geometry.location.lat,
+              lng: place.geometry.location.lng
+            })
+          }));
+          
+          allPlaces.push(...processedPlaces);
+        }
+        
+        // If we found enough places, stop searching
+        if (allPlaces.length >= 10) {
+          break;
+        }
+        
+      } catch (typeError) {
+        console.error(`❌ Error processing type: ${type}`, typeError.message);
+        continue;
+      }
+    }
+    
+    // If we found real places, return them
+    if (allPlaces.length > 0) {
+      console.log(`✅ Returning ${allPlaces.length} real places`);
+      return {
+        places: allPlaces.sort((a, b) => a.distance - b.distance).slice(0, 20),
+        source: 'google_api',
+        location: location,
+        totalFound: allPlaces.length
+      };
+    }
+    
+    // If no real places found, use mock data
+    console.log('❌ No real places found, using mock data');
+    return generateMockPlaces(location, mood, radius);
+    
+  } catch (error) {
+    console.error('❌ Critical error in getNearbyPlaces:', error);
+    return generateMockPlaces(location, mood, radius);
+  }
+};
+                  
+                  if (distanceKm <= radius / 1000) {
+                    allPlaces.push({
+                      name: place.name,
+                      vicinity: place.vicinity || '',
+                      rating: place.rating?.toString() || '4.0',
+                      distance: distanceKm,
+                      place_id: place.place_id,
+                      user_ratings_total: place.user_ratings_total || 0,
+                      price_level: place.price_level || 1,
+                      types: place.types || [type],
+                      geometry: { location: placeLocation },
+                      photos: place.photos || [],
+                      opening_hours: place.opening_hours || null
+                    });
+                  }
+                }
+              }
+            } catch (pageError) {
+              console.log(`⚠️ Could not fetch next page for ${type}:`, pageError.message);
+            }
+          }
+        }
+      } catch (typeError) {
+        console.error(`❌ Error fetching ${type}:`, typeError.message);
+      }
+    }
+
+    // Strategy 2: Search by keyword to get more diverse results
+    try {
+      console.log('🔍 Trying keyword search for more results...');
+      const keywordApiUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json`;
+      const searchRadius = Math.min(radius, 50000);
+      const keywordParams = new URLSearchParams({
+        location: `${location.lat},${location.lng}`,
+        radius: searchRadius.toString(),
+        keyword: mood,
+        key: process.env.GOOGLE_MAPS_API_KEY
+      });
+
+      console.log(`🔍 Keyword search with radius: ${searchRadius}m (requested: ${radius}m)`);
+      const keywordResponse = await axios.get(`${keywordApiUrl}?${keywordParams}`, { timeout: 10000 });
+      
+      // Check for API errors
+      if (keywordResponse.data.status === 'REQUEST_DENIED') {
+        console.error('❌ Google Places API access denied (keyword):', keywordResponse.data.error_message);
+        console.error('🔑 API Key Issue - Check Google Cloud Console:');
+        console.error('   1. API Key restrictions (HTTP referrers, IP addresses)');
+        console.error('   2. Billing account status');
+        console.error('   3. APIs enabled (Places API, Maps JavaScript API)');
+        return; // Exit function early
+      }
+      
+      if (keywordResponse.data.status === 'OK' && keywordResponse.data.results) {
+        console.log(`✅ Found ${keywordResponse.data.results.length} places via keyword search`);
+        
+        for (const place of keywordResponse.data.results) {
+          const placeLocation = {
+            lat: place.geometry.location.lat,
+            lng: place.geometry.location.lng
+          };
+          
+          const distanceKm = calculateDistance(location, placeLocation);
+          
+          if (distanceKm <= radius / 1000) {
+            allPlaces.push({
+              name: place.name,
+              vicinity: place.vicinity || '',
+              rating: place.rating?.toString() || '4.0',
+              distance: distanceKm,
+              place_id: place.place_id,
+              user_ratings_total: place.user_ratings_total || 0,
+              price_level: place.price_level || 1,
+              types: place.types || ['establishment'],
+              geometry: { location: placeLocation },
+              photos: place.photos || [],
+              opening_hours: place.opening_hours || null
+            });
+          }
+        }
+      }
+    } catch (keywordError) {
+      console.log('⚠️ Keyword search failed:', keywordError.message);
+    }
+
+    // Strategy 3: Text search for comprehensive results
+    try {
+      console.log('🔍 Trying text search for comprehensive results...');
+      const textSearchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json`;
+      const searchRadius = Math.min(radius, 50000);
+      const textSearchParams = new URLSearchParams({
+        query: `${mood} near ${location.lat},${location.lng}`,
+        location: `${location.lat},${location.lng}`,
+        radius: searchRadius.toString(),
+        key: process.env.GOOGLE_MAPS_API_KEY
+      });
+
+      console.log(`🔍 Text search with radius: ${searchRadius}m (requested: ${radius}m)`);
+      const textSearchResponse = await axios.get(`${textSearchUrl}?${textSearchParams}`, { timeout: 10000 });
+      
+      // Check for API errors
+      if (textSearchResponse.data.status === 'REQUEST_DENIED') {
+        console.error('❌ Google Places API access denied (text):', textSearchResponse.data.error_message);
+        console.error('🔑 API Key Issue - Check Google Cloud Console:');
+        console.error('   1. API Key restrictions (HTTP referrers, IP addresses)');
+        console.error('   2. Billing account status');
+        console.error('   3. APIs enabled (Places API, Maps JavaScript API)');
+        return; // Exit function early
+      }
+      
+      if (textSearchResponse.data.status === 'OK' && textSearchResponse.data.results) {
+        console.log(`✅ Found ${textSearchResponse.data.results.length} places via text search`);
+        
+        for (const place of textSearchResponse.data.results) {
+          const placeLocation = {
+            lat: place.geometry.location.lat,
+            lng: place.geometry.location.lng
+          };
+          
+          const distanceKm = calculateDistance(location, placeLocation);
+          
+          if (distanceKm <= radius / 1000) {
+            allPlaces.push({
+              name: place.name,
+              vicinity: place.vicinity || place.formatted_address || '',
+              rating: place.rating?.toString() || '4.0',
+              distance: distanceKm,
+              place_id: place.place_id,
+              user_ratings_total: place.user_ratings_total || 0,
+              price_level: place.price_level || 1,
+              types: place.types || ['establishment'],
+              geometry: { location: placeLocation },
+              photos: place.photos || [],
+              opening_hours: place.opening_hours || null
+            });
+          }
+        }
+        
+        // Try next page for text search
+        if (textSearchResponse.data.next_page_token) {
+          console.log('📄 Getting next page for text search...');
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          
+          try {
+            const nextPageParams = new URLSearchParams({
+              pagetoken: textSearchResponse.data.next_page_token,
+              key: process.env.GOOGLE_MAPS_API_KEY
+            });
+            
+            const nextPageResponse = await axios.get(`${textSearchUrl}?${nextPageParams}`, { timeout: 10000 });
+            
+            if (nextPageResponse.data.status === 'OK' && nextPageResponse.data.results) {
+              console.log(`✅ Found ${nextPageResponse.data.results.length} additional places via text search`);
+              
+              for (const place of nextPageResponse.data.results) {
+                const placeLocation = {
+                  lat: place.geometry.location.lat,
+                  lng: place.geometry.location.lng
+                };
+                
+                const distanceKm = calculateDistance(location, placeLocation);
+                
+                if (distanceKm <= radius / 1000) {
+                  allPlaces.push({
+                    name: place.name,
+                    vicinity: place.vicinity || place.formatted_address || '',
+                    rating: place.rating?.toString() || '4.0',
+                    distance: distanceKm,
+                    place_id: place.place_id,
+                    user_ratings_total: place.user_ratings_total || 0,
+                    price_level: place.price_level || 1,
+                    types: place.types || ['establishment'],
+                    geometry: { location: placeLocation },
+                    photos: place.photos || [],
+                    opening_hours: place.opening_hours || null
+                  });
+                }
+              }
+            }
+          } catch (textPageError) {
+            console.log('⚠️ Could not fetch next page for text search:', textPageError.message);
+          }
+        }
+      }
+    } catch (textSearchError) {
+      console.log('⚠️ Text search failed:', textSearchError.message);
+    }
+
+    // If we got real places, return them
+    if (allPlaces.length > 0) {
+      const uniquePlaces = allPlaces.filter((place, index, self) =>
+        index === self.findIndex((p) => p.place_id === place.place_id)
+      );
+      uniquePlaces.sort((a, b) => a.distance - b.distance);
+      console.log(`✅ Found ${allPlaces.length} total places, ${uniquePlaces.length} unique places`);
+      console.log('🎯 Returning all available places (no limit)');
+      return { 
+        places: uniquePlaces,
+        source: 'google_api',
+        location: location,
+        totalFound: uniquePlaces.length
+      };
+    }
+
+    // If no real places found, check if it's due to API issues and return mock data as fallback
+    console.log('⚠️ No real places found, checking if API calls failed...');
+    console.log('🔄 Falling back to mock data to ensure app functionality');
+    return generateMockPlaces(location, mood, radius);
+    
+  } catch (error) {
+    console.error('❌ Error in getNearbyPlaces:', error.message);
+    return { error: error.message, places: [] };
+  }
+// ... (rest of the code remains the same)
+};
+
+// Mock data generator as fallback
+const generateMockPlaces = (location, mood, radius) => {
+  console.log('🎲 Generating realistic mock places for location:', location);
+  
+  const maxDistanceKm = radius / 1000;
+  const placeTemplates = {
+    food: { names: ['Local Diner', 'Street Food Corner', 'Family Restaurant', 'Cuisine House', 'Tasty Eats'], type: 'restaurant' },
+    nature: { names: ['Community Park', 'Green Space', 'Walking Trail', 'City Garden', 'Nature Reserve'], type: 'park' },
+    work: { names: ['Business Hub', 'Creative Space', 'Office Complex', 'Work Center', 'Professional Suites'], type: 'coworking_space' },
+    shopping: { names: ['Shopping District', 'Retail Center', 'Market Place', 'Fashion Hub', 'Commerce Center'], type: 'shopping_mall' },
+    fitness: { names: ['Fitness Center', 'Gym & Health', 'Workout Zone', 'Training Facility', 'Sports Complex'], type: 'gym' },
+    relax: { names: ['Relaxation Spa', 'Wellness Studio', 'Massage Center', 'Peaceful Retreat', 'Calm Sanctuary'], type: 'spa' },
+    social: { names: ['Social Lounge', 'Gathering Place', 'Meeting Spot', 'Community Bar', 'Night Venue'], type: 'bar' },
+    culture: { names: ['Heritage Museum', 'Cultural Center', 'Exhibition Hall', 'Arts Gallery', 'History House'], type: 'museum' },
+    entertainment: { names: ['Entertainment Zone', 'Game Center', 'Fun Arena', 'Cinema Complex', 'Recreation Hub'], type: 'movie_theater' },
+    learning: { names: ['Public Library', 'Study Center', 'Knowledge Hub', 'Learning Space', 'Book Haven'], type: 'library' },
+    clinic: { names: ['Medical Center', 'Health Clinic', 'Care Facility', 'Wellness Center', 'Treatment Hub'], type: 'hospital' }
+  };
+
+  const template = placeTemplates[mood] || placeTemplates.food;
+  const numPlaces = Math.min(12, Math.max(6, Math.floor(maxDistanceKm * 2)));
+  const places = [];
+  
+  // Create location-specific identifier from coordinates
+  const locationId = `${location.lat.toFixed(2)}_${location.lng.toFixed(2)}`;
+  const locationArea = `Area ${locationId.replace(/[._-]/g, ' ')}`;
+
+  for (let i = 0; i < numPlaces; i++) {
+    const angle = (i / numPlaces) * 2 * Math.PI;
+    const distanceKm = (Math.random() * 0.7 + 0.2) * maxDistanceKm;
+    
+    const latOffset = (distanceKm / 111) * Math.cos(angle);
+    const lngOffset = (distanceKm / (111 * Math.cos(location.lat * Math.PI / 180))) * Math.sin(angle);
+    
+    const placeLocation = {
+      lat: location.lat + latOffset,
+      lng: location.lng + lngOffset
+    };
+    
+    // Include coordinate reference in name and vicinity for verification
+    const placeName = `${template.names[i % template.names.length]} (${locationArea})`;
+    const streetName = `Block ${Math.floor(Math.random() * 10) + 1}`;
+
+    places.push({
+      name: placeName,
+      vicinity: `${streetName}, Near ${locationArea}`,
+      rating: (Math.random() * 1.5 + 3.5).toFixed(1),
+      distance: distanceKm,
+      place_id: `mock_${locationId}_${mood}_${i}`,
+      user_ratings_total: Math.floor(Math.random() * 300) + 50,
+      price_level: Math.floor(Math.random() * 3) + 1,
+      types: [template.type],
+      geometry: { location: placeLocation },
+      photos: []
+    });
+  }
+
+  places.sort((a, b) => a.distance - b.distance);
+  console.log(`🎲 Generated ${places.length} mock places at coordinates: ${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`);
+  return { 
+    places: places,
+    source: 'mock_data',
+    location: location,
+    totalFound: places.length
+  };
+};
+
+const getPlaceDetails = async (placeId) => {
+  try {
+    if (!process.env.GOOGLE_MAPS_API_KEY) {
+      throw new Error('Google Maps API key not configured');
+    }
+
+    console.log('🔍 Fetching place details for:', placeId);
+    
+    const apiUrl = `https://maps.googleapis.com/maps/api/place/details/json`;
+    const params = new URLSearchParams({
+      place_id: placeId,
+      fields: 'name,rating,formatted_address,geometry,photos,opening_hours,price_level,reviews,types',
+      key: process.env.GOOGLE_MAPS_API_KEY
+    });
+
+    const response = await axios.get(`${apiUrl}?${params}`);
+    
+    if (!response.data.result) {
+      throw new Error('Place not found');
+    }
+
+    return response.data.result;
+    
+  } catch (error) {
+    console.error('❌ Error fetching place details:', error);
+    throw error;
+  }
+};
+
+module.exports = {
+  getNearbyPlaces,
+  getPlaceDetails,
+  calculateDistance
+};
