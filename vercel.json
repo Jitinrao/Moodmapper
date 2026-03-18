@@ -24,10 +24,10 @@
     }
   ],
   "env": {
-    "GOOGLE_MAPS_API_KEY": "@google-maps-api-key",
-    "MONGO_URI": "@mongo-uri",
-    "JWT_SECRET": "@jwt-secret",
-    "EMAIL_USER": "@email-user",
-    "EMAIL_PASS": "@email-pass"
+    "GOOGLE_MAPS_API_KEY": "AIzaSyDyT79prG3kJw-VjczBngi6QvO4_EMZJ_k",
+    "MONGO_URI": "mongodb://localhost:27017/nearbytracker",
+    "JWT_SECRET": "nearbytracker_super_secret_key_2026",
+    "EMAIL_USER": "jitinrao0929_db_user@admin",
+    "EMAIL_PASS": "Jitender098"
   }
 }
