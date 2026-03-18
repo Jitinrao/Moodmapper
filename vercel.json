@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "package.json",
+      "src": "frontend/package.json",
       "use": "@vercel/static-build",
       "config": {
         "distDir": "build"
@@ -22,12 +22,5 @@
       "src": "/(.*)",
       "dest": "/frontend/build/$1"
     }
-  ],
-  "env": {
-    "GOOGLE_MAPS_API_KEY": "AIzaSyDyT79prG3kJw-VjczBngi6QvO4_EMZJ_k",
-    "MONGO_URI": "mongodb://localhost:27017/nearbytracker",
-    "JWT_SECRET": "nearbytracker_super_secret_key_2026",
-    "EMAIL_USER": "jitinrao0929_db_user@admin",
-    "EMAIL_PASS": "Jitender098"
-  }
+  ]
 }
