@@ -3,9 +3,8 @@ import { useTheme } from '../contexts/ThemeContext';
 import axios from 'axios';
 
 // API URL for different environments
-const API_URL = process.env.NODE_ENV === 'production' 
-  ? '/api' 
-  : process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
+console.log("🌐 FINAL API URL:", API_URL);
 
 const GoogleMapsComponent = () => {
   const { theme, toggleTheme } = useTheme();
