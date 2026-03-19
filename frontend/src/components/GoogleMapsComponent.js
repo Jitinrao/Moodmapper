@@ -1118,49 +1118,62 @@ const GoogleMapsComponent = () => {
       backgroundColor: theme === 'dark' ? '#0a0a0a' : '#f8fafc',
       color: theme === 'dark' ? '#ffffff' : '#1f2937',
       margin: 0,
-      padding: '2rem',
-      boxSizing: 'border-box'
+      padding: 'clamp(1rem, 3vw, 2rem)',
+      boxSizing: 'border-box',
+      overflowX: 'hidden'
     }}>
       {/* Main Content */}
-      <div style={{ padding: '0 2rem' }}>
+      <div style={{ 
+        padding: '0 clamp(1rem, 2vw, 2rem)',
+        maxWidth: '100vw',
+        margin: '0 auto'
+      }}>
         <div style={{ 
           display: 'flex', 
           justifyContent: 'center', 
           alignItems: 'flex-start',
-          gap: '2rem',
-          marginBottom: '2rem',
+          gap: 'clamp(1rem, 2vw, 2rem)',
+          marginBottom: 'clamp(1.5rem, 3vw, 2rem)',
           flexWrap: 'wrap'
         }}>
-          <div style={{ display: 'flex', gap: '1rem', width: '100%', maxWidth: '600px', margin: '0 auto', position: 'relative' }}>
+          <div style={{ 
+            display: 'flex', 
+            gap: '1rem', 
+            width: '100%', 
+            maxWidth: '600px', 
+            margin: '0 auto', 
+            position: 'relative' 
+          }}>
             <input
               value={searchQuery}
               onChange={handleInputChange}
               placeholder="Search location or places..."
               style={{
                 width: '100%',
-                padding: '1.25rem',
-                fontSize: '1.1rem',
+                padding: 'clamp(1rem, 2.5vw, 1.25rem)',
+                fontSize: 'clamp(1rem, 2.5vw, 1.1rem)',
                 border: `1px solid ${theme === 'dark' ? '#374151' : '#d1d5db'}`,
                 borderRadius: '8px',
                 outline: 'none',
                 backgroundColor: theme === 'dark' ? '#1f2937' : '#ffffff',
                 color: theme === 'dark' ? '#ffffff' : '#1f2937',
                 boxSizing: 'border-box',
-                minWidth: '400px'
+                minWidth: 'clamp(250px, 60vw, 400px)'
               }}
             />
             <button
               onClick={handleSearch}
               disabled={!searchQuery.trim()}
               style={{
-                padding: '0.75rem 1.5rem',
+                padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1rem, 3vw, 1.5rem)',
                 backgroundColor: '#2563eb',
                 color: 'white',
                 border: 'none',
                 borderRadius: '8px',
-                fontSize: '1rem',
+                fontSize: 'clamp(0.9rem, 2vw, 1rem)',
                 cursor: 'pointer',
-                transition: 'all 0.3s ease'
+                transition: 'all 0.3s ease',
+                whiteSpace: 'nowrap'
               }}
             >
               🔍 Search
@@ -1171,16 +1184,19 @@ const GoogleMapsComponent = () => {
               <div
                 style={{
                   position: 'absolute',
-                  top: 'calc(100% + 8px)',
+                  top: '100%',
                   left: 0,
-                  right: '80px',
-                  background: theme === 'dark' ? '#1f2937' : '#ffffff',
+                  right: 0,
+                  backgroundColor: theme === 'dark' ? '#1f2937' : '#ffffff',
                   border: `1px solid ${theme === 'dark' ? '#374151' : '#d1d5db'}`,
                   borderRadius: '8px',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                  marginTop: '0.5rem',
+                  maxHeight: '300px',
+                  overflowY: 'auto',
                   zIndex: 1000,
-                  maxHeight: '250px',
-                  overflowY: 'auto'
+                  boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                  width: '100%',
+                  minWidth: 'clamp(250px, 60vw, 400px)'
                 }}
               >
                 {suggestions && suggestions.map((suggestion) => (
@@ -1309,8 +1325,8 @@ const GoogleMapsComponent = () => {
           </h3>
           <div style={{ 
             display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', 
-            gap: '1rem', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(clamp(120px, 25vw, 140px), 1fr))', 
+            gap: 'clamp(0.75rem, 2vw, 1rem)', 
             maxWidth: '1200px', 
             margin: '0 auto' 
           }}>
@@ -1325,29 +1341,29 @@ const GoogleMapsComponent = () => {
                   }
                 }}
                 style={{
-                  padding: '1.5rem 1rem',
+                  padding: 'clamp(1rem, 2.5vw, 1.5rem) clamp(0.75rem, 2vw, 1rem)',
                   border: selectedMood === mood.id ? '2px solid #2563eb' : `1px solid ${theme === 'dark' ? '#374151' : '#d1d5db'}`,
                   borderRadius: '16px',
                   backgroundColor: selectedMood === mood.id ? mood.color : (theme === 'dark' ? '#1f2937' : '#ffffff'),
                   color: selectedMood === mood.id ? '#ffffff' : (theme === 'dark' ? '#ffffff' : '#1f2937'),
-                  fontSize: '1rem',
+                  fontSize: 'clamp(0.85rem, 2vw, 1rem)',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
                   textAlign: 'center',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  gap: '0.5rem'
+                  gap: 'clamp(0.25rem, 1vw, 0.5rem)',
+                  minHeight: 'clamp(100px, 20vw, 140px)'
                 }}
               >
                 <span style={{ 
-                  fontSize: '2rem',
-                  marginRight: '0.5rem',
+                  fontSize: 'clamp(1.5rem, 4vw, 2rem)',
                   display: 'block'
                 }}>{mood.icon}</span>
                 <span style={{ 
                   fontWeight: '700', 
-                  fontSize: '1.125rem',
+                  fontSize: 'clamp(0.9rem, 2.5vw, 1.125rem)',
                   display: 'block'
                 }}>{mood.name}</span>
               </button>
@@ -1360,15 +1376,12 @@ const GoogleMapsComponent = () => {
           <div style={{ 
             textAlign: 'center', 
             marginBottom: '2rem',
-            padding: '1.5rem',
-            background: theme === 'dark' ? '#1f2937' : '#f8fafc',
-            borderRadius: '12px',
-            border: `1px solid ${theme === 'dark' ? '#374151' : '#e5e7eb'}`
+            padding: '0 clamp(1rem, 3vw, 2rem)'
           }}>
             <h3 style={{ 
-              marginBottom: '1rem', 
-              color: theme === 'dark' ? '#ffffff' : '#1f2937',
-              fontSize: '1.2rem',
+              marginBottom: '1.5rem', 
+              color: theme === 'dark' ? '#f3f4f6' : '#374151',
+              fontSize: 'clamp(1.1rem, 3vw, 1.2rem)',
               fontWeight: '600'
             }}>
               📏 Search Distance: {selectedDistance} km
@@ -1437,7 +1450,7 @@ const GoogleMapsComponent = () => {
 
         {/* Map */}
         <div style={{ 
-          padding: '2rem',
+          padding: 'clamp(1rem, 3vw, 2rem)',
           maxWidth: '1200px',
           margin: '0 auto'
         }}>
@@ -1445,7 +1458,7 @@ const GoogleMapsComponent = () => {
             ref={mapRef}
             style={{ 
               position: 'relative', 
-              height: '500px', 
+              height: 'clamp(300px, 60vw, 500px)', 
               width: '100%', 
               borderRadius: '12px', 
               overflow: 'hidden' 
@@ -1503,14 +1516,14 @@ const GoogleMapsComponent = () => {
         )}
         {filteredPlaces.length > 0 && (
           <div style={{ 
-            padding: '2rem',
+            padding: 'clamp(1rem, 3vw, 2rem)',
             maxWidth: '1200px',
             margin: '0 auto'
           }}>
             <h3 style={{ 
-              marginBottom: '2rem', 
+              marginBottom: 'clamp(1.5rem, 3vw, 2rem)', 
               color: theme === 'dark' ? '#ffffff' : '#1f2937',
-              fontSize: '1.5rem',
+              fontSize: 'clamp(1.2rem, 3vw, 1.5rem)',
               fontWeight: '600',
               textAlign: 'center'
             }}>
@@ -1518,8 +1531,8 @@ const GoogleMapsComponent = () => {
             </h3>
             <div style={{ 
               display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
-              gap: '1.5rem' 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(clamp(280px, 90vw, 300px), 1fr))', 
+              gap: 'clamp(1rem, 2vw, 1.5rem)' 
             }}>
               {filteredPlaces && filteredPlaces.map((place, index) => (
                 <div
@@ -1528,7 +1541,7 @@ const GoogleMapsComponent = () => {
                     background: theme === 'dark' ? '#1f2937' : '#ffffff',
                     border: `1px solid ${theme === 'dark' ? '#374151' : '#e5e7eb'}`,
                     borderRadius: '12px',
-                    padding: '1.5rem',
+                    padding: 'clamp(1rem, 2.5vw, 1.5rem)',
                     boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                     transition: 'transform 0.2s ease, box-shadow 0.2s ease'
                   }}
@@ -1545,14 +1558,17 @@ const GoogleMapsComponent = () => {
                     display: 'flex', 
                     justifyContent: 'space-between', 
                     alignItems: 'flex-start',
-                    marginBottom: '1rem'
+                    marginBottom: 'clamp(0.75rem, 2vw, 1rem)',
+                    flexWrap: 'wrap',
+                    gap: '0.5rem'
                   }}>
                     <h4 style={{ 
                       margin: 0, 
                       color: theme === 'dark' ? '#ffffff' : '#1f2937',
-                      fontSize: '1.1rem',
+                      fontSize: 'clamp(1rem, 2.5vw, 1.1rem)',
                       fontWeight: '600',
-                      flex: 1
+                      flex: 1,
+                      minWidth: 'clamp(150px, 60%, 200px)'
                     }}>
                       {place.name}
                     </h4>
@@ -1560,47 +1576,52 @@ const GoogleMapsComponent = () => {
                       <span style={{
                         background: '#10b981',
                         color: 'white',
-                        padding: '0.25rem 0.5rem',
+                        padding: 'clamp(0.2rem, 1vw, 0.25rem) clamp(0.4rem, 1.5vw, 0.5rem)',
                         borderRadius: '12px',
-                        fontSize: '0.8rem',
+                        fontSize: 'clamp(0.75rem, 2vw, 0.8rem)',
                         fontWeight: '600',
-                        marginLeft: '0.5rem'
+                        whiteSpace: 'nowrap'
                       }}>
                         ⭐ {place.rating}
                       </span>
                     )}
                   </div>
                   <p style={{ 
-                    margin: '0 0 0.5rem 0', 
+                    margin: '0 0 clamp(0.5rem, 1.5vw, 1rem) 0', 
                     color: theme === 'dark' ? '#b0b0b0' : '#6b7280',
-                    fontSize: '0.9rem',
+                    fontSize: 'clamp(0.85rem, 2.5vw, 0.9rem)',
                     lineHeight: '1.4'
                   }}>
-                    📍 {place.vicinity || place.formatted_address}
+                    📍 {place.vicinity}
                   </p>
-                  {place.distance && (
-                    <p style={{ 
-                      margin: '0 0 0.5rem 0', 
-                      color: '#2563eb',
-                      fontSize: '0.9rem',
-                      fontWeight: '600'
-                    }}>
-                      📏 {parseFloat(place.distance).toFixed(2)} km away
-                    </p>
-                  )}
-                  {place.price_level && (
-                    <p style={{ 
-                      margin: '0 0 0.5rem 0', 
-                      color: theme === 'dark' ? '#b0b0b0' : '#6b7280',
-                      fontSize: '0.9rem'
-                    }}>
-                      {'₹'.repeat(place.price_level)}
-                    </p>
-                  )}
                   <div style={{ 
                     display: 'flex', 
-                    gap: '0.5rem',
-                    marginTop: '1rem'
+                    justifyContent: 'space-between', 
+                    alignItems: 'center',
+                    marginTop: 'auto',
+                    flexWrap: 'wrap',
+                    gap: '0.5rem'
+                  }}>
+                    <span style={{ 
+                      color: theme === 'dark' ? '#b0b0b0' : '#6b7280',
+                      fontSize: 'clamp(0.8rem, 2vw, 0.85rem)' 
+                    }}>
+                      📏 {place.distance || 'N/A'} km
+                    </span>
+                    {place.price_level && (
+                      <span style={{ 
+                        color: theme === 'dark' ? '#b0b0b0' : '#6b7280',
+                        fontSize: 'clamp(0.8rem, 2vw, 0.85rem)' 
+                      }}>
+                        💰 {'$'.repeat(place.price_level)}
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ 
+                    display: 'flex', 
+                    gap: 'clamp(0.5rem, 1.5vw, 0.5rem)',
+                    marginTop: 'clamp(0.75rem, 2vw, 1rem)',
+                    flexWrap: 'wrap'
                   }}>
                     <button
                       onClick={() => {
@@ -1608,14 +1629,16 @@ const GoogleMapsComponent = () => {
                         window.open(mapsUrl, '_blank');
                       }}
                       style={{
-                        padding: '0.5rem 1rem',
-                        background: '#2563eb',
+                        padding: 'clamp(0.5rem, 1.5vw, 0.75rem) clamp(0.75rem, 2vw, 1rem)',
+                        backgroundColor: '#2563eb',
                         color: 'white',
                         border: 'none',
                         borderRadius: '6px',
-                        fontSize: '0.9rem',
+                        fontSize: 'clamp(0.8rem, 2vw, 0.85rem)',
                         cursor: 'pointer',
-                        transition: 'background 0.2s ease'
+                        transition: 'all 0.3s ease',
+                        flex: 1,
+                        minWidth: 'clamp(100px, 30%, 120px)'
                       }}
                       onMouseEnter={(e) => e.currentTarget.style.background = '#1d4ed8'}
                       onMouseLeave={(e) => e.currentTarget.style.background = '#2563eb'}
