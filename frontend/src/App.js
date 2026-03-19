@@ -9,7 +9,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import SettingsDropdown from './components/SettingsDropdown';
 import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
-import ProductionGoogleMaps from './components/ProductionGoogleMaps';
+import GoogleMapsComponent from './components/GoogleMapsComponent';
 import Footer from './components/Footer';
 import ProfilePage from './pages/ProfilePage';
 import AccountSettingsPage from './pages/AccountSettingsPage';
@@ -349,7 +349,7 @@ const App = () => {
       {/* Main Content */}
       <div className="main-content">
         <Routes>
-          <Route path="/" element={<ProductionGoogleMaps />} />
+         <Route path="/" element={<GoogleMapsComponent />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           
