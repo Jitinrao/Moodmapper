@@ -122,7 +122,7 @@ const getNearbyPlaces = async (location, mood, radius = 2000) => {
  const selectedType = moodToPlacesTypes[mood]?.[0] || 'restaurant';
 const types = [selectedType];
 
-for (const type of types)
+
     const allPlaces = [];
     
     // Strategy 1: Search by specific types
