@@ -16,9 +16,6 @@ const { errorHandler } = require("./middleware/errorHandler");
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// Export for Vercel
-module.exports = app;
-
 /* =========================
    DATABASE
 ========================= */
@@ -35,7 +32,7 @@ mongoose
   });
 
 /* =========================
-   CORS (allow everything in development)
+   MIDDLEWARE
 ========================= */
 
 app.use(
@@ -46,19 +43,11 @@ app.use(
   })
 );
 
-/* =========================
-   HELMET (disable cross origin policy)
-========================= */
-
 app.use(
   helmet({
     crossOriginResourcePolicy: false,
   })
 );
-
-/* =========================
-   RATE LIMIT
-========================= */
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -66,11 +55,6 @@ const limiter = rateLimit({
 });
 
 app.use(limiter);
-
-/* =========================
-   BODY PARSER
-========================= */
-
 app.use(express.json());
 
 /* =========================
@@ -100,13 +84,9 @@ app.get("/api/health", (req, res) => {
 app.use(errorHandler);
 
 /* =========================
-   START SERVER (for local development)
+   START SERVER (IMPORTANT FIX)
 ========================= */
 
-// Only start server if not in Vercel environment
-if (process.env.NODE_ENV !== 'production') {
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`📍 Health check: http://localhost:${PORT}/api/health`);
-  });
-}
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
