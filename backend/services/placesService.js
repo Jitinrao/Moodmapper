@@ -119,7 +119,10 @@ const getNearbyPlaces = async (location, mood, radius = 2000) => {
 
     // Try to fetch real places from Google Places API
     console.log('🌐 Attempting to fetch real places from Google API...');
-    const types = moodToPlacesTypes[mood] || ['restaurant'];
+ const selectedType = moodToPlacesTypes[mood]?.[0] || 'restaurant';
+const types = [selectedType];
+
+for (const type of types)
     const allPlaces = [];
     
     // Strategy 1: Search by specific types
@@ -173,8 +176,12 @@ const getNearbyPlaces = async (location, mood, radius = 2000) => {
               lng: place.geometry.location.lng
             })
           }));
-          
-          allPlaces.push(...processedPlaces);
+     
+const filteredPlaces = processedPlaces.filter(place =>
+  place.types.some(t => t.toLowerCase().includes(type.toLowerCase()))
+);
+
+allPlaces.push(...(filteredPlaces.length ? filteredPlaces : processedPlaces));
         }
         
         // If we found enough places, stop searching
