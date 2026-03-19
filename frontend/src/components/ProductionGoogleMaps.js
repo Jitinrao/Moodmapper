@@ -18,6 +18,7 @@ const ProductionGoogleMaps = () => {
   const placesServiceRef = useRef(null);
   const geocoderRef = useRef(null);
   const userMarkerRef = useRef(null);
+  const [selectedCategory, setSelectedCategory] = useState('fitness');
 
   // Load Google Maps script
   const { isLoaded, loadError } = useLoadScript({
@@ -182,32 +183,49 @@ const ProductionGoogleMaps = () => {
 
   // Search nearby places
   const searchNearbyPlaces = useCallback((location) => {
-    if (!placesServiceRef.current) return;
+  if (!placesServiceRef.current) return;
 
-    placesServiceRef.current.nearbySearch(
-      {
-        location: location,
-        radius: 5000,
-        type: 'restaurant'
-      },
-      (results, status) => {
-        if (status === 'OK' && results) {
-          console.log('✅ Found nearby places:', results.length);
-          const placesWithDistance = results.map(place => ({
-            ...place,
-            distance: calculateDistance(location, {
-              lat: place.geometry.location.lat(),
-              lng: place.geometry.location.lng()
-            }).toFixed(1)
-          }));
-          setPlaces(placesWithDistance);
-        } else {
-          console.log('❌ No nearby places found');
-          setPlaces([]);
-        }
+  console.log("🔍 Current category:", selectedCategory);
+
+  const moodToType = {
+    fitness: 'gym',
+    food: 'restaurant',
+    chill: 'cafe',
+    party: 'night_club',
+    nature: 'park'
+  };
+
+  const placeType = moodToType[selectedCategory] || 'restaurant';
+
+  console.log("📍 Searching for type:", placeType);
+
+  placesServiceRef.current.nearbySearch(
+    {
+      location: location,
+      radius: 5000,
+      type: placeType
+    },
+    (results, status) => {
+      if (status === 'OK' && results) {
+        console.log('✅ Found nearby places:', results.length);
+
+        const placesWithDistance = results.map(place => ({
+          ...place,
+          distance: calculateDistance(location, {
+            lat: place.geometry.location.lat(),
+            lng: place.geometry.location.lng()
+          }).toFixed(1)
+        }));
+
+        setPlaces(placesWithDistance);
+      } else {
+        console.log('❌ No nearby places found');
+        setPlaces([]);
       }
-    );
-  }, []);
+    }
+  );
+}, [selectedCategory]);
+
 
   // Calculate distance
   const calculateDistance = useCallback((point1, point2) => {
