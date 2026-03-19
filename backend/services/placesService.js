@@ -4,7 +4,7 @@ const axios = require('axios');
 const moodToPlacesTypes = {
   work: ['coworking_space', 'office', 'business_center', 'library'],
   relax: ['spa', 'park', 'beauty_salon', 'wellness_center'],
-  food: ['restaurant', 'cafe', 'bakery', 'bar', 'food', 'meal_delivery'],
+  food: ['restaurant', 'cafe', 'bakery', 'bar', 'food', 'meal_delivery','dhaba'],
   social: ['bar', 'nightclub', 'casino', 'bowling_alley', 'movie_theater'],
   nature: ['park', 'tourist_attraction', 'campground', 'hiking_area', 'zoo'],
   fitness: ['gym', 'fitness_center', 'yoga_studio', 'swimming_pool', 'sports_complex'],
